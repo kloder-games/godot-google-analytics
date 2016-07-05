@@ -13,7 +13,15 @@ public class GodotGoogleAnalytics extends Godot.SingletonBase
 
     private Activity activity = null;
 
-    private String tracking_id = null;
+    private String tracker_id = null;
+    private String app_version = "1.0";
+    private String app_name = "My App";
+    private String bundle_id = null;
+    private int dispatch_period = 1800;
+    private double sample_rate = 100.0d;
+    private boolean anonymize_ip = false;
+    private boolean ad_id_collection = true;
+    private boolean dry_run = false;
 
     private static GoogleAnalytics analytics;
     private static Tracker tracker;
@@ -21,10 +29,36 @@ public class GodotGoogleAnalytics extends Godot.SingletonBase
     /**
      * Initialization
      */
-    public void init(final String tracker_id) {
-        this.tracking_id = tracking_id;
+    public void init_full(final String tracker_id,
+        final String app_version, final String app_name,
+        final String bundle_id,
+        final int dispatch_period, final double sample_rate,
+        final boolean anonymize_ip, final boolean ad_id_collection, final boolean dry_run)
+    {
+        this.dispatch_period = dispatch_period;
+        this.dry_run = dry_run;
+
+        this.tracker_id = tracker_id;
+        this.app_version = app_version;
+        this.app_name = app_name;
+        this.bundle_id = bundle_id;
+        this.sample_rate = sample_rate;
+        this.anonymize_ip = anonymize_ip;
+        this.ad_id_collection = ad_id_collection;
+
         getDefaultTracker();
-        Log.i("godot", "Init Analytics: " + tracker_id);
+    }
+
+    public void init(final String tracker_id,
+        final String app_version, final String app_name,
+        final String bundle_id)
+    {
+        this.tracker_id = tracker_id;
+        this.app_version = app_version;
+        this.app_name = app_name;
+        this.bundle_id = bundle_id;
+
+        getDefaultTracker();
     }
 
     /**
@@ -39,12 +73,22 @@ public class GodotGoogleAnalytics extends Godot.SingletonBase
                 public void run()
                 {
                     analytics = GoogleAnalytics.getInstance(activity);
-                    analytics.setLocalDispatchPeriod(1800);
+                    //analytics.getLogger().setLogLevel(LogLevel.VERBOSE);
+                    analytics.setLocalDispatchPeriod(dispatch_period);
+                    analytics.setDryRun(dry_run);
 
-                    tracker = analytics.newTracker(tracking_id);
-                    tracker.enableExceptionReporting(true);
-                    tracker.enableAdvertisingIdCollection(true);
-                    tracker.enableAutoActivityTracking(true);
+                    if (tracker_id != null) {
+                        tracker = analytics.newTracker(tracker_id);
+                        tracker.setAppVersion(app_version);
+                        tracker.setAppName(app_name);
+                        if (bundle_id != null) tracker.setAppId(bundle_id);
+                        tracker.setSampleRate((double) sample_rate);
+                        tracker.setAnonymizeIp(anonymize_ip);
+                        tracker.enableAdvertisingIdCollection(ad_id_collection);
+                        Log.i("godot", "GoogleAnalytics: Init Google Analytics -> " + tracker_id);
+                    } else {
+                        Log.e("godot", "GoogleAnalytics: tracking id missing.");
+                    }
                 }
             });
         }
@@ -61,8 +105,8 @@ public class GodotGoogleAnalytics extends Godot.SingletonBase
             @Override
             public void run()
             {
-                Log.i("godot", "Setting screen name: " + name);
-                tracker.setScreenName("Image~" + name);
+                Log.i("godot", "GoogleAnalytics: Setting screen name: " + name);
+                tracker.setScreenName(name);
                 tracker.send(new HitBuilders.ScreenViewBuilder().build());
             }
         });
@@ -80,7 +124,7 @@ public class GodotGoogleAnalytics extends Godot.SingletonBase
             @Override
             public void run()
             {
-                Log.i("godot", "Register event: " + category + " -> " + action);
+                Log.i("godot", "GoogleAnalytics: Register event: " + category + " -> " + action);
                 tracker.send(new HitBuilders.EventBuilder()
                     .setCategory(category)
                     .setAction(action)
