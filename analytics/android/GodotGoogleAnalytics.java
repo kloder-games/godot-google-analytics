@@ -29,24 +29,29 @@ public class GodotGoogleAnalytics extends Godot.SingletonBase
     /**
      * Initialization
      */
-    public void init_full(final String tracker_id,
-        final String app_version, final String app_name,
-        final String bundle_id,
-        final int dispatch_period, final double sample_rate,
-        final boolean anonymize_ip, final boolean ad_id_collection, final boolean dry_run)
+    public void setDispatchPeriod(final int dispatch_period)
     {
         this.dispatch_period = dispatch_period;
-        this.dry_run = dry_run;
+    }
 
-        this.tracker_id = tracker_id;
-        this.app_version = app_version;
-        this.app_name = app_name;
-        this.bundle_id = bundle_id;
+    public void setSampleRate(final double sample_rate)
+    {
         this.sample_rate = sample_rate;
-        this.anonymize_ip = anonymize_ip;
-        this.ad_id_collection = ad_id_collection;
+    }
 
-        getDefaultTracker();
+    public void setAnonymizeIp(final boolean anonymize_ip)
+    {
+        this.anonymize_ip = anonymize_ip;
+    }
+
+    public void setAdIdCollection(final boolean ad_id_collection)
+    {
+        this.ad_id_collection = ad_id_collection;
+    }
+
+    public void setDryRun(final boolean dry_run)
+    {
+        this.dry_run = dry_run;
     }
 
     public void init(final String tracker_id,
@@ -151,7 +156,9 @@ public class GodotGoogleAnalytics extends Godot.SingletonBase
     public GodotGoogleAnalytics(Activity activity) {
         this.activity = activity;
         registerClass("GoogleAnalytics", new String[] {
-            "init", "screen", "event"
+            "setDispatchPeriod", "setSampleRate", "setAnonymizeIp", "setAdIdCollection", "setDryRun",
+            "init",
+            "screen", "event"
         });
     }
 }
