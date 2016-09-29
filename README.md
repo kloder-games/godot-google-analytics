@@ -73,6 +73,8 @@ screen(name)
 event(category, action)
 ```
 
+You can find an example on "demo/Analytics.gd" file.
+
 References
 -------------
 Google Analytics Services:
